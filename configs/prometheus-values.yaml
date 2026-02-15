@@ -1,0 +1,4 @@
+prometheus:
+  prometheusSpec:
+    externalUrl: /prometheus
+    routePrefix: /prometheus
