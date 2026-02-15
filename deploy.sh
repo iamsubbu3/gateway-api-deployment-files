@@ -22,25 +22,26 @@ echo "[OK] Cluster connectivity verified."
 # 1️⃣ Apply Gateway API resources
 # ------------------------------------------------
 echo "----------------------------------------------"
-echo "[STEP 1] Applying Cilium Gateway API resources"
+echo "[STEP 1] Applying Gateway API resources"
 echo "----------------------------------------------"
 
 kubectl apply -f cilium-gateway-api/
 
 # ------------------------------------------------
-# 2️⃣ Apply Application Configurations
+# 2️⃣ Apply Kubernetes configs ONLY
 # ------------------------------------------------
 echo "----------------------------------------------"
-echo "[STEP 2] Applying app configurations"
+echo "[STEP 2] Applying app ConfigMaps"
 echo "----------------------------------------------"
 
-kubectl apply -f configs/
+kubectl apply -f configs/argocd-cmd-params.yaml
+kubectl apply -f configs/kibana-config.yaml
 
 # ------------------------------------------------
-# 3️⃣ Helm upgrades (Grafana + Prometheus)
+# 3️⃣ Helm upgrade (Grafana + Prometheus)
 # ------------------------------------------------
 echo "----------------------------------------------"
-echo "[STEP 3] Updating kube-prometheus-stack values"
+echo "[STEP 3] Helm upgrade kube-prometheus-stack"
 echo "----------------------------------------------"
 
 helm upgrade monitoring prometheus-community/kube-prometheus-stack \
@@ -50,7 +51,7 @@ helm upgrade monitoring prometheus-community/kube-prometheus-stack \
   --reuse-values
 
 # ------------------------------------------------
-# 4️⃣ Restart workloads (required for path changes)
+# 4️⃣ Restart workloads
 # ------------------------------------------------
 echo "----------------------------------------------"
 echo "[STEP 4] Restarting workloads"
@@ -67,7 +68,7 @@ kubectl rollout status deployment monitoring-grafana -n monitoring
 kubectl rollout status deployment kibana -n observability
 
 # ------------------------------------------------
-# 5️⃣ Validation checks
+# 5️⃣ Validation
 # ------------------------------------------------
 echo "----------------------------------------------"
 echo "[STEP 5] Gateway validation"
@@ -83,10 +84,11 @@ GATEWAY_ADDR=$(kubectl get gateway monitoring-gateway \
 echo ""
 echo "=============================================="
 echo "✅ DEPLOYMENT COMPLETE"
-echo "Gateway LoadBalancer:"
+echo ""
+echo "Gateway URL:"
 echo "http://$GATEWAY_ADDR"
 echo ""
-echo "Try these URLs:"
+echo "Access:"
 echo "http://$GATEWAY_ADDR/argocd"
 echo "http://$GATEWAY_ADDR/grafana"
 echo "http://$GATEWAY_ADDR/prometheus"

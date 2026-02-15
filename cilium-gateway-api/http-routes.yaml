@@ -7,35 +7,22 @@ spec:
   parentRefs:
   - name: monitoring-gateway
     namespace: monitoring
-    sectionName: http
   rules:
   - matches:
     - path:
         type: PathPrefix
         value: /argocd
+    filters:
+    - type: URLRewrite
+      urlRewrite:
+        path:
+          type: ReplacePrefixMatch
+          replacePrefixMatch: /
     backendRefs:
     - name: argocd-server
       port: 80
 
----
-apiVersion: gateway.networking.k8s.io/v1
-kind: HTTPRoute
-metadata:
-  name: prometheus-route
-  namespace: monitoring
-spec:
-  parentRefs:
-  - name: monitoring-gateway
-    namespace: monitoring
-    sectionName: http
-  rules:
-  - matches:
-    - path:
-        type: PathPrefix
-        value: /prometheus
-    backendRefs:
-    - name: monitoring-kube-prometheus-prometheus
-      port: 9090
+
 
 ---
 apiVersion: gateway.networking.k8s.io/v1
@@ -47,15 +34,47 @@ spec:
   parentRefs:
   - name: monitoring-gateway
     namespace: monitoring
-    sectionName: http
   rules:
   - matches:
     - path:
         type: PathPrefix
         value: /grafana
+    filters:
+    - type: URLRewrite
+      urlRewrite:
+        path:
+          type: ReplacePrefixMatch
+          replacePrefixMatch: /
     backendRefs:
     - name: monitoring-grafana
       port: 80
+
+
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: prometheus-route
+  namespace: monitoring
+spec:
+  parentRefs:
+  - name: monitoring-gateway
+    namespace: monitoring
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /prometheus
+    filters:
+    - type: URLRewrite
+      urlRewrite:
+        path:
+          type: ReplacePrefixMatch
+          replacePrefixMatch: /
+    backendRefs:
+    - name: monitoring-kube-prometheus-prometheus
+      port: 9090
+
 
 ---
 apiVersion: gateway.networking.k8s.io/v1
@@ -67,12 +86,18 @@ spec:
   parentRefs:
   - name: monitoring-gateway
     namespace: monitoring
-    sectionName: http
   rules:
   - matches:
     - path:
         type: PathPrefix
         value: /kibana
+    filters:
+    - type: URLRewrite
+      urlRewrite:
+        path:
+          type: ReplacePrefixMatch
+          replacePrefixMatch: /
     backendRefs:
     - name: kibana
       port: 5601
+
